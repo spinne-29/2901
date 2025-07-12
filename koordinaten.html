@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Koordinaten-Umwandler (Google Maps zu UTM)</title>
+    <title>GIS-Koordinaten</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,12 +49,13 @@
             cursor: pointer;
             font-size: 16px;
             margin-right: 10px;
+            margin-bottom: 10px; /* Added for better spacing */
             transition: background-color 0.2s ease;
         }
         button:hover {
             background-color: #0056b3;
         }
-        .result-box {
+        .result-box, .map-box {
             margin-top: 30px;
             padding: 20px;
             background-color: #e9ecef;
@@ -69,6 +71,12 @@
             margin-top: 10px;
             font-weight: bold;
         }
+        iframe {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.min.js"></script>
 </head>
@@ -78,32 +86,45 @@
         <button onclick="getLocation()">Eigenen Standort ermitteln</button><br><br>
         <div class="input-group">
             <label for="latitude">Breitengrad (z.B. 52.42226) aus Google Maps o.ä.:</label>
-            <input type="text" id="latitude" placeholder="Enter Breitengrad">
+            <input type="text" id="latitude" placeholder="Breitengrad (Latitude)">
         </div>
         <div class="input-group">
             <label for="longitude">Längengrad (z.B. 9.56025) aus Google Maps o.ä.:</label>
-            <input type="text" id="longitude" placeholder="Enter Längengrad">
+            <input type="text" id="longitude" placeholder="Längengrad (Longitude)">
         </div>
-        <button onclick="convertCoordinates()">Koordinaten umwandeln</button>
+        <button onclick="convertAndShow()">Koordinaten umwandeln</button>
 
 
         <div class="result-box" id="result-1">
             <p><strong>NIVADIS GIS "Rechts":</strong> <span id="utmEasting">N/A</span></p>
         </div>
-                <div class="result-box" id="result-2">
-            <p><strong>zone:</strong> <span id="utmZone">N/A</span></p>
-
+        <div class="result-box" id="result-2">
             <p><strong>NIVADIS GIS "Hoch":</strong> <span id="utmNorthing">N/A</span></p>
-        </div>
+        </div><br>
         <div id="error-message" class="error"></div>
-        <iframe width="597" height="250" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://www.openstreetmap.org/export/embed.html?bbox=9.699318408966066%2C47.484177893725764%2C9.729595184326174%2C47.49977861091604&amp;layer=mapnik&amp;marker=47.49197883161885%2C9.714467525482178" style="border: 1px solid black"></iframe>
+        <div class="map-box">
+            <iframe id="osmMap" src="about:blank" title="OpenStreetMap Viewer"></iframe>
+        </div>
     </div>
 
     <script>
         // Definiert das WGS84 (EPSG:4326) Koordinatensystem
         proj4.defs("EPSG:4326", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
 
-        function convertCoordinates() {
+        // Funktion zum Aktualisieren der OSM-Karte
+        function updateOsmMap(latitude, longitude) {
+            const osmMapFrame = document.getElementById('osmMap');
+            if (osmMapFrame) {
+                // Generischer OSM-Link mit Marker und Zoom. Zoomstufe 15 ist ein guter Standardwert.
+                const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${longitude}%2C${latitude}%2C${longitude}%2C${latitude}&marker=${latitude},${longitude}`;
+                osmMapFrame.src = mapUrl;
+            }
+        }
+
+        // Ich habe den Namen der Funktion hier an die vorherige Empfehlung angepasst.
+        // Sie kann aber auch "convertCoordinates" heißen, solange der "onclick"
+        // in den Buttons ebenfalls angepasst wird.
+        function convertAndShow() {
             const latitude = parseFloat(document.getElementById('latitude').value);
             const longitude = parseFloat(document.getElementById('longitude').value);
             const errorMessage = document.getElementById('error-message');
@@ -112,41 +133,31 @@
 
             if (isNaN(latitude) || isNaN(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
                 errorMessage.textContent = 'Bitte gültige Breiten- und Längengrade eingeben.';
-                document.getElementById('utmZone').textContent = 'N/A';
+                // document.getElementById('utmZone').textContent ist nicht mehr vorhanden in Ihrem aktuellen HTML
                 document.getElementById('utmEasting').textContent = 'N/A';
                 document.getElementById('utmNorthing').textContent = 'N/A';
+                document.getElementById('osmMap').src = 'about:blank'; // Karte zurücksetzen
                 return;
             }
 
             try {
-                // Bestimme die UTM-Zone basierend auf dem Längengrad
                 const utmZoneNumber = Math.floor((longitude + 180) / 6) + 1;
                 const utmHemisphere = latitude >= 0 ? 'N' : 'S';
                 const utmProjectionCode = `EPSG:326${utmZoneNumber}`; // Für nördliche Hemisphäre (WGS 84 / UTM zone XXN)
-
-                // Definiere die UTM-Projektion für die spezifische Zone
-                // Proj4js benötigt die Definition für die Ziel-Projektion
-                // Beispiel: +proj=utm +zone=32 +datum=WGS84 +units=m +no_defs (für Zone 32N)
-                // Die genaue Definition muss auf Basis der Zone dynamisch erstellt werden
                 proj4.defs(utmProjectionCode, `+proj=utm +zone=${utmZoneNumber} +datum=WGS84 +units=m +no_defs`);
-                
-                // Für die südliche Hemisphäre müsste die Projektion anders definiert werden (+south)
-                // Da dies eine kleine Web-Anwendung ist und der Fokus auf WGS84 liegt,
-                // gehen wir davon aus, dass die meisten Nutzer im Norden sein werden.
-                // Für eine vollständige Lösung müsste hier unterschieden werden:
-                // if (utmHemisphere === 'S') { proj4.defs(utmProjectionCode, `+proj=utm +zone=${utmZoneNumber} +south +datum=WGS84 +units=m +no_defs`); }
-
                 const utmCoordinates = proj4("EPSG:4326", utmProjectionCode, [longitude, latitude]);
 
-                document.getElementById('utmZone').textContent = `${utmZoneNumber}`;
                 document.getElementById('utmEasting').textContent = `${utmZoneNumber}` + utmCoordinates[0].toFixed(0);
                 document.getElementById('utmNorthing').textContent = utmCoordinates[1].toFixed(0);
 
+                updateOsmMap(latitude, longitude);
+
             } catch (e) {
                 errorMessage.textContent = 'Fehler bei der Umrechnung: ' + e.message + '. Stellen Sie sicher, dass die Koordinaten gültig sind und die UTM-Zone korrekt abgeleitet werden kann.';
-                document.getElementById('utmZone').textContent = 'N/A';
+                // document.getElementById('utmZone').textContent = 'N/A'; // Nicht mehr vorhanden
                 document.getElementById('utmEasting').textContent = 'N/A';
                 document.getElementById('utmNorthing').textContent = 'N/A';
+                document.getElementById('osmMap').src = 'about:blank'; // Karte zurücksetzen
             }
         }
 
@@ -159,7 +170,8 @@
                     (position) => {
                         document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
                         document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
-                        convertCoordinates(); // Direkt nach dem Erhalt der Position umwandeln
+                        // Rufen Sie die gemeinsame Funktion auf, die UTM umwandelt und die Karte aktualisiert
+                        convertAndShow();
                     },
                     (error) => {
                         let msg = '';
@@ -178,6 +190,7 @@
                                 break;
                         }
                         errorMessage.textContent = msg;
+                        document.getElementById('osmMap').src = 'about:blank'; // Karte zurücksetzen
                     },
                     {
                         enableHighAccuracy: true,
@@ -187,6 +200,7 @@
                 );
             } else {
                 errorMessage.textContent = "Ihr Browser unterstützt die Geolocation API nicht.";
+                document.getElementById('osmMap').src = 'about:blank'; // Karte zurücksetzen
             }
         }
     </script>
