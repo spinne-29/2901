@@ -1,3 +1,89 @@
+<!-- 
+
+Eine Erweiterung für
+
+
+             000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000             
+          0000000                                                                                                       0000000          
+        00000                                                                                                               00000        
+      0000                                                                                                                     0000      
+    0000                                                                                                                         0000    
+   0000                                                                                                                           0000   
+  000                                                                                                                              0000  
+ 000                                                                                                                                 000 
+000                                                                                                                                  0000
+000                       0000                                                                                                        000
+00                      00     00       0000000000000000000000000000000000000000000000                                                 00
+00                      0         00    00000000000000000000000000000000000000000000000000                                             00
+00                      0            00000000000000000000000000000000000000000000000000000000                                          00
+00                       00             0000000000000000000000000000000000000000000000000000000                                        00
+00                          000             00000000000000000000000000000000000000000000000000000                                      00
+00                             000             0000000000000000000000     0000000000000000000000000                                    00
+00                                 00            000000000000  0000000  0000000000000000000000000000                                   00
+00                                    00           000     000000000 00000000000000000000000000000000                                  00
+00                                      000          000 000000000 00000000000000000000000000000000000                                 00
+00                                       00000000    0 0000000000            00000000000000000000000000                                00
+00                                     0000000000000 00000000000                  000000000000000000000                                00
+00                                   00000000000000000000000000                     00000000000000000000                               00
+00                                  00000000000000000000000000                       0000000000000000000                               00
+00                                 00000000000000000000000000 000000000000            000000000000000000                               00
+00                                00000000000000000000000000 0000000000000            000000000000000000                               00
+00                               000000000000000000000000000 0000000000000 000000     000000000000000000                               00
+00                               00000000000000000000000000 00000000000000 00000000   000000000000000000   0                           00
+00                              000000000000000000000000000000000000000000 0000000000 000000000000000000   0000000                     00
+00                       0000   00000000000000000000000000 000000000000000 00000000000 00000000000000000        00000                  00
+00                   0000      000000000000000000000000000 000000000000000 00000000000 0000000000000000           0000                 00
+00                 0000        00000000000000000000000000     00000000000000000  00000 0000000000000000          0000                  00
+00                 0000                    00000000000000 0000000000000000000 0000 000 000000000000000       000000                    00
+00                   000000             00000000  0000000 0000                0000  00000000000000000000000000                         00
+00                       000000000000   000000000000000000000000000000000000000000000000000         0000                               00
+00                              00000000              000000000000000                   00000000000                                    00
+00                                      0000000000000000000000000000000000000000000000000000000000                                     00
+00                                      000000000000000000000000000000000000000000000000000000000                                      00
+00                                      0000000000000000000000000000000000000000000000000000000                                        00
+00                                      0000000000000000000000000000000000000000000000000000                                           00
+00                                      0000000000000000000000000000000000000000000000000                                              00
+00                                      000000000000000000000000000000000000000000000                                                  00
+00                                      0000000000000000000                                                                            00
+00                                      0000000000000000000                                                                            00
+00                                      0000000000000000000                                                                            00
+00                                      0000000000000000000                                                                            00
+00                                      0000000000000000000                                                                            00
+00                                      0000000000000000000                                                                            00
+00                                      0000000000000000000                                                                            00
+00                                      0000000000000000000                                                                            00
+00                                      0000000000000000000                                                                            00
+00                                      0000000000000000000                                                                            00
+00                                      0000000000000000000                                                                            00
+00                                                                                                                                     00
+00                                                                                                                                     00
+00                                                                                                                                     00
+00                                                                                                                                     00
+00                                0000000    000            00       000      00    00000000 00000000000                               00
+00                                000000000  000           0000      00000    00    00000000 00000000000                               00
+00                                000   000  000          00 000     000000   00    00           000                                   00
+00                                000   000  000         000  00     000 000  00    0000000      000                                   00
+00                                00000000   000        000   000    000  000 00    0000000      000                                   00
+00                                000        000        0000000000   000   00000    00           000                                   00
+00                                000        000       000      000  000    0000    00           000                                   00
+00                                000        00000000 000        000 000     000    00000000     000                                   00
+00                                                                                                                                    000
+000                                                                                                                                   000
+0000                                                                                                                                 000 
+ 0000                                                                                                                               000  
+  0000                                                                                                                             000   
+   0000                                                                                                                          0000    
+     0000                                                                                                                      00000     
+       00000                                                                                                                 00000       
+         000000                                                                                                           000000         
+            000000000                                                                                               000000000            
+                000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000                        
+          
+
+Das Planenschlitzer-Erleichterungs-Tool
+
+-->
+
 
 <!DOCTYPE html>
 <html lang="de">
@@ -50,7 +136,7 @@
             cursor: pointer;
             font-size: 16px;
             margin-right: 10px;
-            margin-bottom: 10px; /* Added for better spacing */
+            margin-bottom: 10px;
             transition: background-color 0.2s ease;
         }
         button:hover {
@@ -111,20 +197,14 @@
     <script>
         // Definiert das WGS84 (EPSG:4326) Koordinatensystem
         proj4.defs("EPSG:4326", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
-
         // Funktion zum Aktualisieren der OSM-Karte
         function updateOsmMap(latitude, longitude) {
             const osmMapFrame = document.getElementById('osmMap');
             if (osmMapFrame) {
-                // Generischer OSM-Link mit Marker und Zoom. Zoomstufe 15 ist ein guter Standardwert.
                 const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${longitude}%2C${latitude}%2C${longitude}%2C${latitude}&marker=${latitude},${longitude}`;
                 osmMapFrame.src = mapUrl;
             }
         }
-
-        // Ich habe den Namen der Funktion hier an die vorherige Empfehlung angepasst.
-        // Sie kann aber auch "convertCoordinates" heißen, solange der "onclick"
-        // in den Buttons ebenfalls angepasst wird.
         function convertAndShow() {
             const latitude = parseFloat(document.getElementById('latitude').value);
             const longitude = parseFloat(document.getElementById('longitude').value);
@@ -134,7 +214,6 @@
 
             if (isNaN(latitude) || isNaN(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
                 errorMessage.textContent = 'Bitte gültige Breiten- und Längengrade eingeben.';
-                // document.getElementById('utmZone').textContent ist nicht mehr vorhanden in Ihrem aktuellen HTML
                 document.getElementById('utmEasting').textContent = 'N/A';
                 document.getElementById('utmNorthing').textContent = 'N/A';
                 document.getElementById('osmMap').src = 'about:blank'; // Karte zurücksetzen
@@ -144,7 +223,7 @@
             try {
                 const utmZoneNumber = Math.floor((longitude + 180) / 6) + 1;
                 const utmHemisphere = latitude >= 0 ? 'N' : 'S';
-                const utmProjectionCode = `EPSG:326${utmZoneNumber}`; // Für nördliche Hemisphäre (WGS 84 / UTM zone XXN)
+                const utmProjectionCode = `EPSG:326${utmZoneNumber}`;
                 proj4.defs(utmProjectionCode, `+proj=utm +zone=${utmZoneNumber} +datum=WGS84 +units=m +no_defs`);
                 const utmCoordinates = proj4("EPSG:4326", utmProjectionCode, [longitude, latitude]);
 
@@ -155,7 +234,6 @@
 
             } catch (e) {
                 errorMessage.textContent = 'Fehler bei der Umrechnung: ' + e.message + '. Stellen Sie sicher, dass die Koordinaten gültig sind und die UTM-Zone korrekt abgeleitet werden kann.';
-                // document.getElementById('utmZone').textContent = 'N/A'; // Nicht mehr vorhanden
                 document.getElementById('utmEasting').textContent = 'N/A';
                 document.getElementById('utmNorthing').textContent = 'N/A';
                 document.getElementById('osmMap').src = 'about:blank'; // Karte zurücksetzen
@@ -171,7 +249,6 @@
                     (position) => {
                         document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
                         document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
-                        // Rufen Sie die gemeinsame Funktion auf, die UTM umwandelt und die Karte aktualisiert
                         convertAndShow();
                     },
                     (error) => {
