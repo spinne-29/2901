@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="erak-touch-icon.png">
+    <title>Autobahn-Einholrechner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 95vh;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            max-width: 550px;
+            width: 90%;
+            margin: auto;
+        }
+
+        h1 {
+            color: #0056b3;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background-color: #fcfcfc;
+        }
+
+        .input-group label {
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+
+        .input-group select,
+        .input-group input[type="number"] {
+            flex-grow: 1;
+            width: auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 0;
+            font-size: 1em;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1em;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .result p {
+            margin-bottom: 10px; /* Abstand zwischen den Ergebniszeilen */
+        }
+
+        .error {
+            color: #dc3545;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Autobahn-Einholrechner</h1>
+
+        <label for="startKm">Dein Startkilometer (km):</label>
+        <input type="number" id="startKm" value="237">
+        
+        <label>Dein Fahrzeug/Bedingung:</label>
+        <div class="input-group">
+            <select id="yourVehicle">
+                <option value="bmw">BMW (190 km/h)</option>
+                <option value="bulli">Bulli (150 km/h)</option>
+                <option value="schlechtesWetter">Schlechtes Wetter (115 km/h)</option>
+            </select>
+            <input type="number" id="customSpeed" placeholder="z.B. 175 km/h">
+        </div>
+
+        <label for="targetKm">Kilometer des verfolgten Fahrzeugs (km):</label>
+        <input type="number" id="targetKm" value="247">
+        
+        <label>Verfolgtes Fahrzeug:</label>
+        <div class="input-group">
+            <select id="targetVehicle">
+                <option value="lkw">Lkw (85 km/h)</option>
+                <option value="pkw">Pkw (130 km/h)</option>
+                <option value="transporter">Transporter (105 km/h)</option>
+                <option value="langsam">Langsam (60 km/h)</option>
+                <option value="schnell">Schnell (160 km/h)</option>
+            </select>
+            <input type="number" id="customTargetSpeed" placeholder="z.B. 90 km/h">
+        </div>
+
+        <label for="timeDelay">Zeitverzug (Sekunden):</label>
+        <input type="number" id="timeDelay" value="60" min="0">
+
+        <button onclick="einholungBerechnen()">Berechnen</button>
+
+        <div class="error" id="errorMessage"></div>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // *** WICHTIG: Passe diese Daten an deine spezifische Autobahnstrecke an! ***
+        // Die Kilometerangaben sollten aufsteigend sortiert sein für die Suchfunktion.
+        const autobahnInteressensPunkte = [
+        	{ km: 176.0, name: "Braunschweig Watenbüttel", type: "AS" },
+        	{ km: 180.5, name: "Zweidorfer Holz", type: "T+R" },
+        	{ km: 187.0, name: "Peine Ost", type: "AS" },
+            { km: 188.5, name: "Peine", type: "AS" },
+            { km: 195.0, name: "Röhrse", type: "PP" },
+            { km: 197.2, name: "Hämelerwald", type: "AS" },
+            { km: 204.0, name: "Lehrte Ost", type: "AS" },
+            { km: 206.0, name: "Lehrter See", type: "T+R" },
+            { km: 208.1, name: "Lehrte", type: "AS" },
+            { km: 218.1, name: "Lahe", type: "AS" },
+            { km: 219.5, name: "Varrelheide", type: "PP" },
+            { km: 222.6, name: "Bothfeld", type: "AS" },
+            { km: 225.8, name: "Langenhagen", type: "AS" },
+            { km: 232.6, name: "Herrenhausen", type: "AS" },
+            { km: 237.0, name: "Garbsen", type: "T+R" },
+			{ km: 241.0, name: "Wunstorf-Luthe", type: "AS" },
+			{ km: 244.6, name: "Wunstorf-Kolenfeld", type: "AS" },
+			{ km: 250.5, name: "Bückethaler Knick", type: "PP" },
+			{ km: 252.6, name: "Bad Nenndorf", type: "AS" },
+			{ km: 259.6, name: "Lauenau", type: "AS" },
+			{ km: 263.3, name: "Schafstrift", type: "PP" },
+			{ km: 268.7, name: "Rehren", type: "AS" },
+			{ km: 270.0, name: "Auetal", type: "T+R" },
+			{ km: 278.8, name: "Bad Eilsen", type: "AS" },
+			{ km: 282.5, name: "Papenbrink", type: "PP" },
+			{ km: 289.0, name: "Veltheim", type: "AS" },
+			{ km: 290.6, name: "Löwenburg", type: "PP" }
+                                ];
+
+        /**
+         * Findet den nächstgelegenen Punkt von Interesse (POI) basierend auf dem Einholkilometer
+         * und der angenommenen Fahrtrichtung.
+         * @param {number} einholKilometer - Der Kilometer, an dem das Fahrzeug eingeholt wird.
+         * @param {number} startKilometer - Der Startkilometer des eigenen Fahrzeugs (für die Richtungsannahme).
+         * @returns {object|null} Das nächstgelegene POI-Objekt oder null, wenn keines gefunden wird.
+         */
+        function naechstenPOIFinden(einholKilometer, startKilometer) {
+            let naechsterPOI = null;
+            let mindestDistanz = Infinity;
+            const istAufsteigendeRichtung = einholKilometer >= startKilometer; // Annahme der Fahrtrichtung
+
+            // POIs filtern, die in der Fahrtrichtung nach dem Einholkilometer liegen
+            const relevantePOIs = autobahnInteressensPunkte.filter(punkt => {
+                if (istAufsteigendeRichtung) {
+                    return punkt.km >= einholKilometer; // Suche vorwärts
+                } else {
+                    return punkt.km <= einholKilometer; // Suche rückwärts
+                }
+            });
+
+            // Finde den nächstgelegenen POI unter den relevanten
+            for (const punkt of relevantePOIs) {
+                const distanz = Math.abs(punkt.km - einholKilometer);
+                if (distanz < mindestDistanz) {
+                    mindestDistanz = distanz;
+                    naechsterPOI = punkt;
+                }
+            }
+            return naechsterPOI;
+        }
+
+
+        /**
+         * Berechnet die Einholzeit und den Einholkilometer und zeigt die Ergebnisse an.
+         */
+        function einholungBerechnen() {
+            const startKilometer = parseFloat(document.getElementById('startKm').value);
+            const zielKilometerEingabe = parseFloat(document.getElementById('targetKm').value);
+            const zeitverzugSekunden = parseFloat(document.getElementById('timeDelay').value);
+
+            // Anpassung der IDs, da die Values geändert wurden
+            const zielFahrzeugOption = document.getElementById('targetVehicle').value;
+            const benutzerdefinierteZielGeschwindigkeitEingabe = document.getElementById('customTargetSpeed').value;
+
+            const eigenesFahrzeugOption = document.getElementById('yourVehicle').value;
+            const benutzerdefinierteEigeneGeschwindigkeitEingabe = document.getElementById('customSpeed').value;
+
+            const fehlermeldungElement = document.getElementById('errorMessage');
+            const ergebnisElement = document.getElementById('result');
+
+            fehlermeldungElement.textContent = '';
+            ergebnisElement.innerHTML = '';
+
+            let zielGeschwindigkeit;
+            if (benutzerdefinierteZielGeschwindigkeitEingabe !== '') {
+                zielGeschwindigkeit = parseFloat(benutzerdefinierteZielGeschwindigkeitEingabe);
+                if (isNaN(zielGeschwindigkeit) || zielGeschwindigkeit < 0) {
+                    fehlermeldungElement.textContent = 'Bitte gib eine gültige positive Zahl oder 0 für die Geschwindigkeit des verfolgten Fahrzeugs ein.';
+                    return;
+                }
+            } else if (zielFahrzeugOption) {
+                switch (zielFahrzeugOption) {
+                    case 'pkw': // Geändert von 'car'
+                        zielGeschwindigkeit = 130;
+                        break;
+                    case 'lkw': // Geändert von 'truck'
+                        zielGeschwindigkeit = 85;
+                        break;
+                    case 'langsam': // Geändert von 'slow'
+                        zielGeschwindigkeit = 60;
+                        break;
+                    case 'transporter': // Geändert von 'van'
+                        zielGeschwindigkeit = 105;
+                        break;
+                    case 'schnell': // Geändert von 'fast'
+                        zielGeschwindigkeit = 160;
+                        break;
+                }
+            } else {
+                fehlermeldungElement.textContent = 'Bitte wähle ein verfolgtes Fahrzeug oder gib eine eigene Geschwindigkeit ein.';
+                return;
+            }
+
+            let eigeneGeschwindigkeit;
+            if (benutzerdefinierteEigeneGeschwindigkeitEingabe !== '') {
+                eigeneGeschwindigkeit = parseFloat(benutzerdefinierteEigeneGeschwindigkeitEingabe);
+                if (isNaN(eigeneGeschwindigkeit) || eigeneGeschwindigkeit <= 0) {
+                    fehlermeldungElement.textContent = 'Bitte gib eine gültige positive Zahl für deine eigene Geschwindigkeit ein.';
+                    return;
+                }
+            } else if (eigenesFahrzeugOption) {
+                switch (eigenesFahrzeugOption) {
+                    case 'bulli':
+                        eigeneGeschwindigkeit = 150;
+                        break;
+                    case 'bmw':
+                        eigeneGeschwindigkeit = 190;
+                        break;
+                    case 'schlechtesWetter': // Geändert von 'badWeather'
+                        eigeneGeschwindigkeit = 115;
+                        break;
+                }
+            } else {
+                fehlermeldungElement.textContent = 'Bitte wähle dein Fahrzeug/Bedingung oder gib eine eigene Geschwindigkeit ein.';
+                return;
+            }
+
+            if (isNaN(startKilometer) || isNaN(zielKilometerEingabe) || isNaN(zeitverzugSekunden) || zeitverzugSekunden < 0) {
+                fehlermeldungElement.textContent = 'Bitte gib alle Kilometerwerte, die Geschwindigkeit und einen gültigen (nicht-negativen) Zeitverzug ein.';
+                return;
+            }
+
+            const verzugsDistanzKm = (zielGeschwindigkeit * zeitverzugSekunden) / 3600;
+            const aktuelleZielKilometer = zielKilometerEingabe + verzugsDistanzKm;
+
+            if (eigeneGeschwindigkeit <= zielGeschwindigkeit) {
+                fehlermeldungElement.textContent = `Deine Geschwindigkeit (${eigeneGeschwindigkeit} km/h) muss höher sein als die des verfolgten Fahrzeugs (${zielGeschwindigkeit} km/h).`;
+                return;
+            }
+
+            const anfangsDistanzAbsolut = Math.abs(aktuelleZielKilometer - startKilometer);
+            
+            let richtungsFaktor;
+            if (aktuelleZielKilometer > startKilometer) {
+                richtungsFaktor = 1;
+            } else {
+                richtungsFaktor = -1;
+            }
+
+            const relativeGeschwindigkeit = eigeneGeschwindigkeit - zielGeschwindigkeit;
+            const einholzeitStunden = anfangsDistanzAbsolut / relativeGeschwindigkeit;
+            const gesamtEinholzeitSekunden = einholzeitStunden * 3600;
+
+            const minuten = Math.floor(gesamtEinholzeitSekunden / 60);
+            const sekunden = Math.round(gesamtEinholzeitSekunden % 60);
+
+            const zurueckgelegteDistanz = eigeneGeschwindigkeit * einholzeitStunden;
+            const einholKilometer = startKilometer + (zurueckgelegteDistanz * richtungsFaktor);
+
+            let zeitText = '';
+            if (minuten > 0) {
+                zeitText += `${minuten} Minute${minuten === 1 ? '' : 'n'}`;
+                if (sekunden > 0) {
+                    zeitText += ` und ${sekunden} Sekunde${sekunden === 1 ? '' : 'n'}`;
+                }
+            } else {
+                zeitText += `${sekunden} Sekunde${sekunden === 1 ? '' : 'n'}`;
+            }
+
+            // Nächsten Anhalteort finden
+            const naechsterPOI = naechstenPOIFinden(einholKilometer, startKilometer);
+            let poiNachricht = '';
+            if (naechsterPOI) {
+                poiNachricht = `<p>Berechneter Anhalteort: ${naechsterPOI.type} ${naechsterPOI.name} <br> (ca. ${Math.abs(naechsterPOI.km - einholKilometer).toFixed(2)} km vom Einholort entfernt)</p>`;
+            } else {
+                poiNachricht = `<p>Kein passender Anhalteort in der Datenbank gefunden, der nach dem Einholort liegt.</p>`;
+            }
+            
+            ergebnisElement.innerHTML = `
+                <p>Fahrzeug eingeholt bei km ${einholKilometer.toFixed(2)}</p>
+                <p>Dauer bis zum Einholen: ${zeitText}</p>
+                ${poiNachricht}
+            `;
+        }
+    </script>
+</body>
+</html>
