@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemarkungs-Finder</title>
+    <style>
+        
+        body {
+            font-family: sans-serif;
+            background-color: #f7fafc; /* light gray */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            margin: 0;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #ffffff;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .header-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            text-align: center;
+            color: #1f2937;
+        }
+
+        .header-subtitle {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .input-label {
+            color: #374151;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .input-flex-container {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .text-input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            transition: border-color 150ms, box-shadow 150ms;
+            background-color: white;
+        }
+
+        .text-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            outline: none;
+        }
+
+        .search-button {
+            padding: 0.75rem 1.5rem;
+            background-color: #2563eb;
+            color: white;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            transition: background-color 150ms, transform 150ms;
+            cursor: pointer;
+            border: none;
+        }
+
+        .search-button:hover {
+            background-color: #1d4ed8;
+        }
+        
+        .search-button:active {
+            transform: scale(0.95);
+        }
+        
+        .search-button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            transition: all 300ms;
+        }
+
+        .status-info { background-color: #dbeafe; color: #1e40af; }
+        .status-error { background-color: #fee2e2; color: #b91c1c; }
+        .status-success { background-color: #d1fae5; color: #065f46; }
+
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-top: 0.5rem;
+        }
+        
+        .results-container-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        /* Dynamische Ergebnis-Karten */
+        .ergebnis-karte {
+            padding: 1rem;
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            border: 1px solid;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 300ms, box-shadow 300ms;
+            animation: fadeIn 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .ergebnis-karte-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1f2937;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px dashed #d1d5db;
+        }
+
+        .ergebnis-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+        
+        .detail-label {
+            font-weight: 500;
+            color: #4b5563;
+        }
+        
+        .detail-value {
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .bereich-info {
+            font-size: 0.75rem;
+            text-align: right;
+            color: #6b7280;
+            padding-top: 0.25rem;
+        }
+
+        .objekt-info {
+            font-size: 1rem;
+            color: #2563eb;
+            font-weight: 600;
+            padding-top: 0.25rem;
+        }
+
+        /* Border colors for results */
+        .border-yellow { border-color: #fcd34d; }
+        .border-green { border-color: #6ee7b7; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .mode-toggle-container {
+            display: flex;
+            background-color: #e5e7eb;
+            padding: 4px;
+            border-radius: 0.5rem;
+            box-shadow: inset 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .mode-toggle-container input[type="radio"] {
+            display: none;
+        }
+
+        .mode-toggle-button {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #4b5563;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .mode-toggle-container input[type="radio"]:checked + .mode-toggle-button {
+            background-color: #ffffff;
+            color: #1f2937;
+            box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="app-container">
+        <h1 class="header-title">Gemarkungs-Finder</h1>
+        <p class="header-subtitle">Für den Zuständigkeitsbereich des ESD BAB in der PD Hannover</p>
+        <div class="input-group">
+            <div>
+                <label class="input-label">Suchmodus wählen:</label>
+                <div class="mode-toggle-container">
+                    <input type="radio" id="modusKm" name="suchModus" value="kilometer" checked>
+                    <label for="modusKm" class="mode-toggle-button">Kilometer</label>
+
+                    <input type="radio" id="modusName" name="suchModus" value="name">
+                    <label for="modusName" class="mode-toggle-button">Name</label>
+                </div>
+            </div>
+
+            <label id="inputLabel" for="kilometerInput" class="input-label">Betriebskilometer eingeben</label>
+            <div class="input-flex-container">
+                <input type="text" id="kilometerInput" placeholder="Kilometer (z.B. 237,920)"
+                       class="text-input">
+                <button id="searchButton" 
+                        class="search-button">
+                    Suchen
+                </button>
+            </div>
+        </div>
+
+        <!-- Status und Ergebnisse -->
+        <div id="statusMessage" class="status-message"></div>
+        <div id="resultsContainer" class="results-container" style="display: none;">
+            <h2 class="results-container-title">Gefundene Treffer:</h2>
+ 
+        </div>
+        
+    </div>
+
+    <!-- Hauptlogik (für Offline-Verwendung) -->
+    <script>
+        let kilometerBereiche = [
+   { autobahn: "A2 (PK BAB BS)", startKm: 171.311, endKm: 176.2, landkreis: "Gifhorn ", gemarkung: "Schwülper ", postleitzahl: "38179", amtsgericht: "Gifhorn ", staatsanwaltschaft: "Braunschweig " },
+   { autobahn: "A2 (PK BAB BS)", startKm: 176.201, endKm: 184.23, landkreis: "Peine ", gemarkung: "Wendeburg ", postleitzahl: "38176", amtsgericht: "Gifhorn ", staatsanwaltschaft: "Hildesheim " },
+   { autobahn: "A2 (PK BAB BS)", startKm: 184.231, endKm: 193.35, landkreis: "Peine ", gemarkung: "Peine ", postleitzahl: "", amtsgericht: "Peine ", staatsanwaltschaft: "Hildesheim " },
+   { autobahn: "A2 (PK BAB BS)", startKm: 193.351, endKm: 193.47, landkreis: "Peine ", gemarkung: "Edemissen ", postleitzahl: "", amtsgericht: "Peine ", staatsanwaltschaft: "Hildesheim " },
+   { autobahn: "A2 (PK BAB BS)", startKm: 193.471, endKm: 195.4, landkreis: "Peine ", gemarkung: "Peine ", postleitzahl: "", amtsgericht: "Peine ", staatsanwaltschaft: "Hildesheim " },
+   { autobahn: "A2", startKm: 195.41, endKm: 213.75, landkreis: "Region Hannover ", gemarkung: "Lehrte ", postleitzahl: "31275", amtsgericht: "AG Lehrte ", staatsanwaltschaft: "StA Hildesheim " },
+   { autobahn: "A2", startKm: 213.751, endKm: 216.3, landkreis: "LH Hannover ", gemarkung: "Hannover ", postleitzahl: "30169", amtsgericht: "AG Hannover ", staatsanwaltschaft: "StA Hannover " },
+   { autobahn: "A2", startKm: 216.301, endKm: 223.3, landkreis: "LH Hannover ", gemarkung: "Hannover ", postleitzahl: "30163", amtsgericht: "AG Hannover ", staatsanwaltschaft: "StA Hannover " },
+   { autobahn: "A2", startKm: 223.301, endKm: 225.1, landkreis: "LH Hannover ", gemarkung: "Hannover ", postleitzahl: "30131", amtsgericht: "AG Hannover ", staatsanwaltschaft: "StA Hannover " },
+   { autobahn: "A2", startKm: 225.101, endKm: 226.15, landkreis: "LH Hannover ", gemarkung: "Hannover ", postleitzahl: "", amtsgericht: "AG Hannover ", staatsanwaltschaft: "StA Hannover " },
+   { autobahn: "A2", startKm: 226.151, endKm: 229, landkreis: "LH Hannover ", gemarkung: "Hannover ", postleitzahl: "", amtsgericht: "AG Hannover ", staatsanwaltschaft: "StA Hannover " },
+   { autobahn: "A2", startKm: 229.001, endKm: 233.74, landkreis: "LH Hannover ", gemarkung: "Hannover ", postleitzahl: "", amtsgericht: "AG Hannover ", staatsanwaltschaft: "StA Hannover " },
+   { autobahn: "A2 (nur RF B)", startKm: 233.741, endKm: 233.8, landkreis: "LH Hannover ", gemarkung: "Hannover ", postleitzahl: "", amtsgericht: "AG Hannover ", staatsanwaltschaft: "StA Hannover " },
+   { autobahn: "A2", startKm: 233.741, endKm: 239.97, landkreis: "Region Hannover ", gemarkung: "Garbsen", postleitzahl: "", amtsgericht: "AG Neustadt", staatsanwaltschaft: "StA Hannover " },
+   { autobahn: "A2", startKm: 239.971, endKm: 242.9, landkreis: "Region Hannover ", gemarkung: "Seelze", postleitzahl: "", amtsgericht: "AG Hannover ", staatsanwaltschaft: "StA Hannover " },
+
+
+        ];
+
+        // DATENSTRUKTUR: Liste der Autobahnobjekte mit Kilometrierung
+        let objekte = [
+   { name: "AS Hannover-Lahe (Nr. 46)", autobahn: "A2", km: 218.1 },
+   { name: "PP Varrelheide", autobahn: "A2", km: 219.5 },
+   { name: "AS Hannover-Bothfeld (Nr. 45)", autobahn: "A2", km: 222.6 },
+   { name: "PP Vahrenheide", autobahn: "A2", km: 224 },
+   { name: "AS Langenhagen (Nr. 44)", autobahn: "A2", km: 225.5 },
+   { name: "PP Godshorn", autobahn: "A2", km: 228 },
+   { name: "AD Hannover-West (Nr. 43)", autobahn: "A2", km: 230.1 },
+   { name: "AS Hannover-Herrenhausen (Nr. 42)", autobahn: "A2", km: 232.6 },
+   { name: "AS Garbsen (Nr. 41)", autobahn: "A2", km: 236.3 },
+   { name: "T+R Garbsen-Nord", autobahn: "A2", km: 237.65 },
+
+        ];
+        
+        // DOM-Element-Referenzen (Deutsch)
+        const statusNachrichtEl = document.getElementById('statusMessage');
+        const ergebnisseContainerEl = document.getElementById('resultsContainer');
+        const suchButton = document.getElementById('searchButton');
+        const kilometerEingabe = document.getElementById('kilometerInput');
+        const inputLabelEl = document.getElementById('inputLabel');
+        // Neue Referenzen für den Umschalter
+        const modusKmEl = document.getElementById('modusKm');
+        const modusNameEl = document.getElementById('modusName');
+
+        function getCurrentModus() {
+            const checkedRadio = document.querySelector('input[name="suchModus"]:checked');
+            return checkedRadio ? checkedRadio.value : 'kilometer'; // Fallback auf Kilometer
+        }
+
+        function zeigeStatus(nachricht, typ = 'info') {
+            statusNachrichtEl.textContent = nachricht;
+            statusNachrichtEl.className = 'status-message';
+
+            if (typ === 'info') {
+                statusNachrichtEl.classList.add('status-info');
+            } else if (typ === 'error') {
+                statusNachrichtEl.classList.add('status-error');
+            } else if (typ === 'success') {
+                statusNachrichtEl.classList.add('status-success');
+            }
+        }
+
+        // === Initialisierung ===
+        // Sortiere die Daten einmalig beim Laden (optimiert die Suche)
+        kilometerBereiche.sort((a, b) => a.startKm - b.startKm);
+        suchButton.disabled = false;
+        zeigeStatus(`Daten für ${kilometerBereiche.length} Streckenbereiche und ${objekte.length} objekte geladen. Die Anwendung ist offline bereit.`, 'success');
+        
+        // === Suchlogik-Funktionen (Deutsch) ===
+
+        function normalisiereKilometer(eingabe) {
+            // Ersetze Komma durch Punkt und konvertiere in eine Zahl
+            const normalisiert = eingabe.replace(',', '.');
+            return parseFloat(normalisiert);
+        }
+
+        /**
+         * Findet ALLE passenden Bereiche für den gegebenen Kilometerwert.
+         * @param {number} kmWert - Der normalisierte Kilometerwert.
+         * @returns {Array} - Ein Array aller passenden Bereiche.
+         */
+        function findePassendeBereicheNachKilometer(kmWert) {
+            return kilometerBereiche.filter(bereich => {
+                // Die Suchlogik: Der Kilometer muss >= Start und <= Ende sein
+                return kmWert >= bereich.startKm && kmWert <= bereich.endKm;
+            });
+        }
+        
+        /**
+         * Findet ALLE objekte, die dem Suchbegriff entsprechen.
+         * @param {string} objektName - Der gesuchte Name der Ausfahrt (Teilstringsuche).
+         * @returns {Array} - Ein Array passender Ausfahrts-Objekte.
+         */
+        function findeObjekt(objektName) {
+            const suchWert = objektName.trim().toLowerCase();
+            if (!suchWert) return [];
+            
+            return objekte.filter(objekte => {
+                // Case-insensitive Teilstringsuche im objektNamen
+                const objektNameKlein = (objekte.name || '').toLowerCase();
+                return objektNameKlein.includes(suchWert);
+            });
+        }
+
+
+        /**
+         * Erstellt und zeigt alle gefundenen Ergebnisse dynamisch an.
+         * @param {Array} ergebnisse - Ein Array von Trefferobjekten.
+         * @param {Object | null} originalSuche - Das Ausfahrts-Objekt, falls über Ausfahrt gesucht wurde.
+         */
+        function zeigeErgebnisse(ergebnisse, originalSuche = null) {
+            // Leere den Container vor dem Hinzufügen neuer Ergebnisse
+            ergebnisseContainerEl.innerHTML = '<h2 class="results-container-title">Gefundene Treffer:</h2>';
+
+            if (ergebnisse.length > 0) {
+                ergebnisse.forEach((ergebnis, index) => {
+                    const startStr = ergebnis.startKm.toFixed(3).replace('.', ',');
+                    const endeStr = ergebnis.endKm.toFixed(3).replace('.', ',');
+                    
+                    const karte = document.createElement('div');
+                    const borderColorClass = ergebnisse.length > 1 ? 'border-yellow' : 'border-green';
+
+                    karte.className = `ergebnis-karte ${borderColorClass}`;
+                    
+                    // Optionaler Hinweis, wenn über objekt gesucht wurde
+                    let objektHinweis = '';
+                    // originalSuche ist nur gesetzt, wenn genau eine objekt als Suchbegriff gefunden wurde.
+                    // Wenn über Streckenkilometer gesucht wird, ist originalSuche null.
+                    // Wenn der objekts-Modus läuft, hat das Ergebnis-Objekt eine 'originalObjekt' Eigenschaft.
+                    if (ergebnis.originalObjekt) {
+                         const objekt = ergebnis.originalObjekt;
+                         const kilometerobjektStr = objekt.km.toFixed(3).replace('.', ',');
+                         objektHinweis = `<p class="objekt-info">Bezieht sich auf Objekt: ${objekt.name} (km ${kilometerobjektStr})</p>`;
+                    }
+
+                    // Füge den HTML-Inhalt der Karte hinzu
+                    karte.innerHTML = `
+                        <h3 class="ergebnis-karte-title">Treffer ${index + 1}</h3>
+                        <div class="ergebnis-detail">
+                            <span class="detail-label">Autobahn:</span>
+                            <span class="detail-value">${ergebnis.autobahn || 'N/A'}</span>
+                        </div>
+                        <div class="ergebnis-detail">
+                            <span class="detail-label">Landkreis:</span>
+                            <span class="detail-value">${ergebnis.landkreis || 'N/A'}</span>
+                        </div>
+                        <div class="ergebnis-detail">
+                            <span class="detail-label">Gemarkung:</span>
+                            <span class="detail-value">${ergebnis.gemarkung || 'N/A'}</span>
+                        </div>
+                        <div class="ergebnis-detail">
+                            <span class="detail-label">Postleitzahl:</span>
+                            <span class="detail-value">${ergebnis.postleitzahl || 'N/A'}</span>
+                        </div>
+                        <div class="ergebnis-detail">
+                            <span class="detail-label">Amtsgericht:</span>
+                            <span class="detail-value">${ergebnis.amtsgericht || 'N/A'}</span>
+                        </div>
+                        <div class="ergebnis-detail">
+                            <span class="detail-label">Staatsanwaltschaft:</span>
+                            <span class="detail-value">${ergebnis.staatsanwaltschaft || 'N/A'}</span>
+                        </div>
+                        ${objektHinweis}
+                        <p class="bereich-info">Kilometerbereich: ${startStr} - ${endeStr}</p>
+                    `;
+                    ergebnisseContainerEl.appendChild(karte);
+                });
+
+                ergebnisseContainerEl.style.display = 'flex';
+                zeigeStatus(`${ergebnisse.length} Treffer gefunden.`, 'success');
+
+            } else {
+                // Kein Treffer
+                ergebnisseContainerEl.style.display = 'none';
+                zeigeStatus('Kein Eintrag gefunden.', 'info');
+            }
+        }
+
+        function fuehreSucheAus() {
+            const modus = getCurrentModus();
+            const eingabe = kilometerEingabe.value.trim();
+            ergebnisseContainerEl.style.display = 'none';
+            let trefferArray = [];
+            
+            if (!eingabe) {
+                zeigeStatus('Bitte geben Sie einen Suchwert ein.', 'info');
+                return;
+            }
+            
+            // --- Modus: Streckenkilometer ---
+            if (modus === 'kilometer') {
+                const kmWert = normalisiereKilometer(eingabe);
+                if (isNaN(kmWert)) {
+                    zeigeStatus('Ungültige Kilometereingabe. Bitte geben Sie eine Zahl ein.', 'error');
+                    return;
+                }
+                zeigeStatus(`Suche nach Kilometer ${kmWert.toFixed(3).replace('.', ',')}...`, 'info');
+                trefferArray = findePassendeBereicheNachKilometer(kmWert);
+                zeigeErgebnisse(trefferArray);
+
+            // --- Modus: objektName ---
+            } else if (modus === 'name') {
+                const gefundeneobjekte = findeObjekt(eingabe);
+                
+                if (gefundeneobjekte.length === 0) {
+                    zeigeStatus(`Kein Objekt mit dem Namen "${eingabe}" gefunden.`, 'error');
+                    return;
+                }
+
+                zeigeStatus(`${gefundeneobjekte.length} Objekt(e) mit dem Namen "${eingabe}" gefunden. Suche zugehörige Streckenbereiche...`, 'info');
+                
+                // Wir sammeln alle Streckenbereiche, die zu den gefundenen objekte gehören
+                let alleBereiche = [];
+                
+                gefundeneobjekte.forEach(objekte => {
+                    const kmWert = objekte.km;
+                    const bereiche = findePassendeBereicheNachKilometer(kmWert);
+                    
+                    bereiche.forEach(bereich => {
+                        if (!alleBereiche.some(b => b.autobahn === bereich.autobahn && b.startKm === bereich.startKm && b.endKm === bereich.endKm)) {
+                             alleBereiche.push(Object.assign({}, bereich, {
+                                originalObjekt: objekte
+                            }));
+                        }
+                    });
+                });
+
+                // Rufe zeigeErgebnisse auf, um die gefundenen Streckenbereiche anzuzeigen.
+                // originalSuche ist hier null, da die Anzeige der Ausfahrt über das ergebnis.originalObjekt-Feld läuft.
+                zeigeErgebnisse(alleBereiche, null);
+            }
+        }
+        
+        // === UI-Anpassung bei Moduswechsel ===
+        function aktualisiereUI() {
+            const modus = getCurrentModus();
+            if (modus === 'kilometer') {
+                inputLabelEl.textContent = 'Betriebskilometer eingeben';
+                kilometerEingabe.placeholder = '(z.B. 237,920)';
+            } else if (modus === 'name') {
+                inputLabelEl.textContent = 'Name des Objektes eingeben';
+                kilometerEingabe.placeholder = '(z.B. Bückethaler Knick)';
+            }
+            // Status und Ergebnisse zurücksetzen
+            zeigeStatus(`Suchmodus auf '${modus}' eingestellt.`, 'info');
+            ergebnisseContainerEl.style.display = 'none';
+            kilometerEingabe.value = '';
+            kilometerEingabe.type = 'text';
+        }
+
+        // === Event Listener (Deutsch) ===
+        suchButton.addEventListener('click', fuehreSucheAus);
+        kilometerEingabe.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                fuehreSucheAus();
+            }
+        });
+        // Listener für den Moduswechsel am Radio-Button-Container
+        modusKmEl.addEventListener('change', aktualisiereUI);
+        modusNameEl.addEventListener('change', aktualisiereUI);
+        
+        // Initialen UI-Zustand festlegen
+        aktualisiereUI();
+
+    </script>
+</body>
+</html>
