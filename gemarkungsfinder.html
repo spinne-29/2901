@@ -439,6 +439,8 @@
         function fuehreSucheAus() {
             const modus = getCurrentModus();
             const eingabe = kilometerEingabe.value.trim();
+                        // NEU: Tastatur ausblenden, um ungewolltes Zoomen auf iOS nach dem Absenden zu beheben
+            kilometerEingabe.blur();
             ergebnisseContainerEl.style.display = 'none';
             let trefferArray = [];
             
@@ -497,9 +499,11 @@
             if (modus === 'kilometer') {
                 inputLabelEl.textContent = 'Betriebskilometer eingeben';
                 kilometerEingabe.placeholder = '(z.B. 237,920)';
+                                kilometerEingabe.inputmode = 'decimal'; 
             } else if (modus === 'name') {
                 inputLabelEl.textContent = 'Name des Objektes eingeben';
                 kilometerEingabe.placeholder = '(z.B. Bückethaler Knick)';
+                                kilometerEingabe.inputmode = 'text'; 
             }
             // Status und Ergebnisse zurücksetzen
             zeigeStatus(`Suchmodus auf '${modus}' eingestellt.`, 'info');
