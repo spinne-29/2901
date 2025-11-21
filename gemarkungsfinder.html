@@ -541,12 +541,13 @@
             if (modus === 'kilometer') {
                 inputLabelEl.textContent = 'Betriebskilometer eingeben';
                 kilometerEingabe.placeholder = '(z.B. 237,920)';
-                                kilometerEingabe.inputmode = 'decimal'; 
+                                kilometerEingabe.type = 'tel'; 
+kilometerEingabe.setAttribute('pattern', '[0-9,.]*'); 
             } else if (modus === 'name') {
                 inputLabelEl.textContent = 'Name des Objektes eingeben';
                 kilometerEingabe.placeholder = '(z.B. Bückethaler Knick)';
-                                kilometerEingabe.inputmode = 'text'; 
-            }
+kilometerEingabe.type = 'text'; 
+kilometerEingabe.removeAttribute('pattern');            }
             // Status und Ergebnisse zurücksetzen
             zeigeStatus(`Suchmodus auf '${modus}' eingestellt.`, 'info');
             ergebnisseContainerEl.style.display = 'none';
