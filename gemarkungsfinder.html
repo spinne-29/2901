@@ -490,7 +490,6 @@
          */
         function resetMobileZoom() {
             // Check, ob es sich um ein iOS-Gerät handelt (optional, aber gut für Performance)
-            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
                 // Setze max-scale temporär auf 1.0
                 viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0';
                 
@@ -498,7 +497,6 @@
                 setTimeout(() => {
                     viewportMeta.content = initialViewportContent;
                 }, 50); // Eine kurze Verzögerung von 50ms ist ausreichend
-            }
         }
 
 
