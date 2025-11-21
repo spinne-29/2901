@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0">
     <title>Gemarkungs-Finder</title>
     <style>
         
@@ -343,6 +343,10 @@
         // Neue Referenzen für den Umschalter
         const modusKmEl = document.getElementById('modusKm');
         const modusNameEl = document.getElementById('modusName');
+        // NEUE REFERENZEN UND KONSTANTEN FÜR DEN IOS ZOOM FIX
+        const viewportMeta = document.getElementById('viewportMeta');
+        const initialViewportContent = viewportMeta ? viewportMeta.content : 'width=device-width, initial-scale=1.0';
+
 
         function getCurrentModus() {
             const checkedRadio = document.querySelector('input[name="suchModus"]:checked');
@@ -477,6 +481,27 @@
                 zeigeStatus('Kein Eintrag gefunden.', 'info');
             }
         }
+
+
+
+        /**
+         * Führt den iOS-Zoom-Workaround aus, um die Seite nach dem Ausblenden der Tastatur 
+         * auf den normalen Zoom zurückzusetzen.
+         */
+        function resetMobileZoom() {
+            // Check, ob es sich um ein iOS-Gerät handelt (optional, aber gut für Performance)
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                // Setze max-scale temporär auf 1.0
+                viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0';
+                
+                // Setze nach kurzer Zeit den ursprünglichen Zustand zurück
+                setTimeout(() => {
+                    viewportMeta.content = initialViewportContent;
+                }, 50); // Eine kurze Verzögerung von 50ms ist ausreichend
+            }
+        }
+
+
 
         function fuehreSucheAus() {
             const modus = getCurrentModus();
