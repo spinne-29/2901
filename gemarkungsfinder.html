@@ -221,38 +221,99 @@
             box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
             font-weight: 600;
         }
-                        /* --- Dark Mode Styles --- */
-        body.dark-mode {
-            background-color: #121212;
-            color: #e0e0e0;
-        }
-        body.dark-mode .container {
-            background-color: #1e1e1e;
-            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
-        }
-        body.dark-mode h1, body.dark-mode h2, body.dark-mode legend {
-            color: #58a6ff;
-        }
-        body.dark-mode label { color: #c9d1d9; }
-        body.dark-mode .checkbox-group label { color: #e0e0e0; }
-        body.dark-mode input[type="text"],
-        body.dark-mode input[type="number"],
-        body.dark-mode select {
-            background-color: #2c2c2c;
-            border-color: #555;
-            color: #e0e0e0;
-        }
-        body.dark-mode input::placeholder { color: #888; }
-        body.dark-mode button { background-color: #0056b3; color: #e0e0e0; border: 1px solid #1e1e1e; }
-        body.dark-mode button:hover { background-color: #007bff; }
-        body.dark-mode #result-1 { background-color: #2a2a2a; border-color: #444; color: #e0e0e0; }
-        body.dark-mode #result-2 { background-color: #2a2a2a; border-color: #444; color: #e0e0e0; }
-        body.dark-mode #map-box { background-color: #2a2a2a; border-color: #444; color: #e0e0e0; }
-        body.dark-mode fieldset {
-            border-color: #4a4a4a;
-            background-color: rgba(255,255,255,0.02);
+       body.dark-mode {
+            background-color: #1f2937; /* Hintergrund dunkler Slate-Ton */
+            color: #e5e7eb;
         }
 
+        body.dark-mode .app-container {
+            background-color: #374151; /* Container-Hintergrund, etwas heller */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Überschriften und Haupttextfarben */
+        body.dark-mode .header-title,
+        body.dark-mode .results-container-title,
+        body.dark-mode .ergebnis-karte-title,
+        body.dark-mode .detail-value {
+            color: #f3f4f6; /* Sehr hell für Hauptüberschriften und Werte */
+        }
+
+        /* Sekundäre Textfarben */
+        body.dark-mode .header-subtitle,
+        body.dark-mode .input-label,
+        body.dark-mode .detail-label,
+        body.dark-mode .bereich-info {
+            color: #9ca3af; /* Mittleres Hellgrau für Labels und Untertitel */
+        }
+
+        /* Eingabefelder */
+        body.dark-mode .text-input {
+            background-color: #4b5563; /* Dunklerer Input-Hintergrund */
+            border-color: #6b7280; /* Hellerer Border */
+            color: #f3f4f6;
+        }
+
+        body.dark-mode .text-input:focus {
+            border-color: #60a5fa; /* Heller Blauer Fokus-Rand */
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+        }
+
+        /* Buttons */
+        body.dark-mode .search-button {
+            background-color: #3b82f6; /* Haupt-Blau beibehalten */
+            color: white;
+            box-shadow: none;
+        }
+
+        body.dark-mode .search-button:hover {
+            background-color: #60a5fa; /* Helleres Blau beim Hover */
+        }
+
+        body.dark-mode .search-button:disabled {
+            background-color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        /* Ergebnis-Karten */
+        body.dark-mode .ergebnis-karte {
+            background-color: #374151; /* Wie App-Container */
+            border-color: #4b5563;
+            box-shadow: none;
+        }
+
+        body.dark-mode .ergebnis-karte-title {
+            border-bottom: 1px dashed #6b7280; /* Hellerer gestrichelter Trennstrich */
+        }
+
+        body.dark-mode .objekt-info {
+            color: #93c5fd; /* Helles Blau für hervorgehobene Info */
+        }
+        
+        /* Ergebnis-Karten Border-Farben (heller für bessere Sichtbarkeit) */
+        body.dark-mode .border-yellow { border-color: #facc15; }
+        body.dark-mode .border-green { border-color: #34d399; }
+
+        /* Status-Meldungen (kontrastreicher) */
+        body.dark-mode .status-info { background-color: #1e3a8a; color: #93c5fd; }
+        body.dark-mode .status-error { background-color: #7f1d1d; color: #fca5a5; }
+        body.dark-mode .status-success { background-color: #065f46; color: #a7f3d0; }
+
+        /* Mode Toggle */
+        body.dark-mode .mode-toggle-container {
+            background-color: #4b5563;
+            box-shadow: inset 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-mode .mode-toggle-button {
+            color: #d1d5db;
+        }
+
+        body.dark-mode .mode-toggle-container input[type="radio"]:checked + .mode-toggle-button {
+            background-color: #374151; /* Dunklerer aktiver Hintergrund */
+            color: #f3f4f6;
+            box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -261,7 +322,7 @@
         <p class="header-subtitle">Für den Zuständigkeitsbereich des ESD BAB in der PD Hannover</p>
         <div class="input-group">
             <div>
-                <label class="input-label">Suchmodus wählen:</label>
+                <label class="input-label">Suchmodus wählen</label>
                 <div class="mode-toggle-container">
                     <input type="radio" id="modusKm" name="suchModus" value="kilometer" checked>
                     <label for="modusKm" class="mode-toggle-button">Kilometer</label>
